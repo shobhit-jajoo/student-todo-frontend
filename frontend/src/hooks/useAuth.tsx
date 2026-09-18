@@ -22,6 +22,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await api.get('/auth/me');
       setUser(response.data.data);
     } catch {
+      localStorage.removeItem('taskflow_token');
       setUser(null);
     } finally {
       setLoading(false);
@@ -34,17 +35,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const response = await api.post('/auth/login', { email, password });
-    const { user: nextUser } = response.data.data;
+    const { user: nextUser, token } = response.data.data;
+    if (token) {
+      localStorage.setItem('taskflow_token', token);
+    }
     setUser(nextUser);
   };
 
   const register = async (name: string, email: string, password: string) => {
     const response = await api.post('/auth/register', { name, email, password });
-    const { user: nextUser } = response.data.data;
+    const { user: nextUser, token } = response.data.data;
+    if (token) {
+      localStorage.setItem('taskflow_token', token);
+    }
     setUser(nextUser);
   };
 
   const logout = () => {
+    localStorage.removeItem('taskflow_token');
     void api.post('/auth/logout').catch(() => undefined);
     setUser(null);
   };

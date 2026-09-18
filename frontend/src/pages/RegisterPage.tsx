@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { getApiErrorMessage } from '../utils/apiError';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -20,8 +21,7 @@ export default function RegisterPage() {
       await register(name, email, password);
       navigate('/dashboard');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Registration failed';
-      setError(message);
+      setError(getApiErrorMessage(err, 'Registration failed'));
     } finally {
       setLoading(false);
     }

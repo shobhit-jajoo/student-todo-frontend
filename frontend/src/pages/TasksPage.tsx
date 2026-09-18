@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import api from '../services/api';
 import { formatDate } from '../utils/date';
+import { getApiErrorMessage } from '../utils/apiError';
 import type { Task } from '../types';
 
 export default function TasksPage() {
@@ -63,10 +64,7 @@ export default function TasksPage() {
       setTasks(response.data.data ?? []);
       setError('');
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Unable to load tasks';
-
-      setError(message);
+      setError(getApiErrorMessage(err, 'Unable to load tasks'));
     } finally {
       setLoading(false);
     }
@@ -139,10 +137,7 @@ export default function TasksPage() {
       closeForm();
       await loadTasks();
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Unable to save task';
-
-      setError(message);
+      setError(getApiErrorMessage(err, 'Unable to save task'));
     }
   };
 
@@ -151,10 +146,7 @@ export default function TasksPage() {
       await api.patch(`/tasks/${taskId}/toggle`);
       await loadTasks();
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Unable to update task';
-
-      setError(message);
+      setError(getApiErrorMessage(err, 'Unable to update task'));
     }
   };
 
@@ -167,10 +159,7 @@ export default function TasksPage() {
       await api.delete(`/tasks/${taskId}`);
       await loadTasks();
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Unable to delete task';
-
-      setError(message);
+      setError(getApiErrorMessage(err, 'Unable to delete task'));
     }
   };
 

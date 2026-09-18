@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
 import type { DashboardStats } from '../types';
+import { getApiErrorMessage } from '../utils/apiError';
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -13,7 +14,7 @@ export default function DashboardPage() {
         const response = await api.get('/tasks/stats');
         setStats(response.data.data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unable to load dashboard');
+        setError(getApiErrorMessage(err, 'Unable to load dashboard'));
       } finally {
         setLoading(false);
       }

@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { getApiErrorMessage } from '../utils/apiError';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('student@example.com');
@@ -19,8 +20,7 @@ export default function LoginPage() {
       await login(email, password);
       navigate('/dashboard');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Login failed';
-      setError(message);
+      setError(getApiErrorMessage(err, 'Login failed'));
     } finally {
       setLoading(false);
     }
