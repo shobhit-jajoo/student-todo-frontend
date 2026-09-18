@@ -18,18 +18,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const refreshUser = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setUser(null);
-      setLoading(false);
-      return;
-    }
-
     try {
       const response = await api.get('/auth/me');
       setUser(response.data.data);
     } catch {
-      localStorage.removeItem('token');
       setUser(null);
     } finally {
       setLoading(false);
@@ -42,20 +34,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const response = await api.post('/auth/login', { email, password });
-    const { token, user: nextUser } = response.data.data;
-    localStorage.setItem('token', token);
+    const { user: nextUser } = response.data.data;
     setUser(nextUser);
   };
 
   const register = async (name: string, email: string, password: string) => {
     const response = await api.post('/auth/register', { name, email, password });
-    const { token, user: nextUser } = response.data.data;
-    localStorage.setItem('token', token);
+    const { user: nextUser } = response.data.data;
     setUser(nextUser);
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    void api.post('/auth/logout').catch(() => undefined);
     setUser(null);
   };
 
