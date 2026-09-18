@@ -20,6 +20,8 @@ export default function TasksPage() {
   >('newest');
 
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [form, setForm] = useState({
     title: '',
@@ -88,7 +90,8 @@ export default function TasksPage() {
 
   const openCreateForm = () => {
     setEditingTask(null);
-
+    setIsFormOpen(true);
+    setError('');
     setForm({
       title: '',
       description: '',
@@ -100,7 +103,8 @@ export default function TasksPage() {
 
   const openEditForm = (task: Task) => {
     setEditingTask(task);
-
+    setIsFormOpen(true);
+    setError('');
     setForm({
       title: task.title,
       description: task.description ?? '',
@@ -114,7 +118,7 @@ export default function TasksPage() {
 
   const closeForm = () => {
     setEditingTask(null);
-
+    setIsFormOpen(false);
     setForm({
       title: '',
       description: '',
@@ -126,18 +130,33 @@ export default function TasksPage() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!form.title.trim()) {
+      setError('Title is required');
+      return;
+    }
 
+    setIsSubmitting(true);
     try {
+      const payload = {
+        title: form.title.trim(),
+        description: form.description.trim() || null,
+        priority: form.priority,
+        dueDate: form.dueDate ? new Date(form.dueDate).toISOString() : null,
+        category: form.category.trim() || null,
+      };
+
       if (editingTask) {
-        await api.put(`/tasks/${editingTask.id}`, form);
+        await api.put(`/tasks/${editingTask.id}`, payload);
       } else {
-        await api.post('/tasks', form);
+        await api.post('/tasks', payload);
       }
 
       closeForm();
       await loadTasks();
     } catch (err) {
       setError(getApiErrorMessage(err, 'Unable to save task'));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -243,10 +262,7 @@ export default function TasksPage() {
       )}
 
       {/* Create / Edit Form */}
-      {editingTask !== null ||
-      form.title ||
-      form.description ||
-      form.category ? (
+      {isFormOpen ? (
         <div className="card form-card">
           <div className="form-header">
             <h3>
@@ -257,6 +273,7 @@ export default function TasksPage() {
               type="button"
               className="text-button"
               onClick={closeForm}
+              disabled={isSubmitting}
             >
               Cancel
             </button>
@@ -354,8 +371,11 @@ export default function TasksPage() {
             <button
               className="primary-button"
               type="submit"
+              disabled={isSubmitting}
             >
-              {editingTask
+              {isSubmitting
+                ? 'Saving...'
+                : editingTask
                 ? 'Save changes'
                 : 'Create task'}
             </button>
