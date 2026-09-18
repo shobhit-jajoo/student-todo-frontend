@@ -7,7 +7,7 @@ import { env } from '../config/env.js';
 const authCookieOptions = {
   httpOnly: true,
   secure: env.nodeEnv === 'production',
-  sameSite: 'lax' as const,
+  sameSite: (env.nodeEnv === 'production' ? 'none' : 'lax') as 'none' | 'lax',
   maxAge: 7 * 24 * 60 * 60 * 1000,
   path: '/',
 };
@@ -21,7 +21,11 @@ export async function register(req: Request, res: Response, next: NextFunction) 
     const { name, email, password } = req.body ?? {};
     const result = await registerUser(name, email, password);
     setAuthCookie(res, result.token);
-    res.status(201).json({ success: true, message: 'User registered successfully', data: { user: result.user } });
+    res.status(201).json({
+      success: true,
+      message: 'User registered successfully',
+      data: { user: result.user, token: result.token },
+    });
   } catch (error) {
     next(error);
   }
@@ -32,7 +36,11 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     const { email, password } = req.body ?? {};
     const result = await loginUser(email, password);
     setAuthCookie(res, result.token);
-    res.status(200).json({ success: true, message: 'Login successful', data: { user: result.user } });
+    res.status(200).json({
+      success: true,
+      message: 'Login successful',
+      data: { user: result.user, token: result.token },
+    });
   } catch (error) {
     next(error);
   }
